@@ -1,0 +1,83 @@
+---
+
+# Requirements: be logged in.
+#
+- name: Configure health-check script on bastion
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Ensure dependencies are installed
+      pip:
+        name: requests
+
+    - name: Create serviceaccount in openshift namespace
+      kubernetes.core.k8s:
+        kubeconfig: "{{ openshift_kubeconfig | default(omit) }}"
+        validate_certs: "{{ validate_certs | default(true) }}"
+        namespace: openshift
+        wait: yes
+        name: health-check-script
+        api_version: v1
+        kind: ServiceAccount
+        state: present
+
+    - name: Grant SA self-provisioner permissions
+      kubernetes.core.k8s:
+        kubeconfig: "{{ openshift_kubeconfig | default(omit) }}"
+        validate_certs: "{{ validate_certs | default(true) }}"
+        apply: yes
+        definition:
+          apiVersion: rbac.authorization.k8s.io/v1
+          kind: ClusterRoleBinding
+          metadata:
+            name: health-check-script-self-provisioner
+          roleRef:
+            apiGroup: rbac.authorization.k8s.io
+            kind: ClusterRole
+            name: self-provisioner
+          subjects:
+            - kind: ServiceAccount
+              name: health-check-script
+              namespace: openshift
+
+    - name: Grab name of SA secrets
+      kubernetes.core.k8s_info:
+        kubeconfig: "{{ openshift_kubeconfig | default(omit) }}"
+        validate_certs: "{{ validate_certs | default(true) }}"
+        name: health-check-script
+        namespace: openshift
+        api_version: v1
+        kind: ServiceAccount
+      register: sa_data
+
+    - name: Determine token name
+      set_fact:
+        sa_token_name: "{{ sa_data | json_query('resources[0].secrets[].name') | select('match', '.*token.*') | list | first }}"
+
+    - name: Get token
+      kubernetes.core.k8s_info:
+        kubeconfig: "{{ openshift_kubeconfig | default(omit) }}"
+        validate_certs: "{{ validate_certs | default(true) }}"
+        name: "{{ sa_data | json_query('resources[0].secrets[].name') | select('match', '.*token.*') | list | first }}"
+        namespace: openshift
+        api_version: v1
+        kind: Secret
+      register: sa_token_raw
+
+    - name: Read kubeconfig
+      set_fact:
+        kubeconfig: "{{ lookup('file', '~/.kube/config') | from_yaml }}"
+
+    - name: Set variables
+      set_fact:
+        sa_token: "{{ sa_token_raw['resources'][0]['data']['token'] | b64decode }}"
+        # From the kubeconfig, it finds your current context name, from that the current context and from that the API URL.
+        api_url: "{{ ( kubeconfig | json_query('clusters') | selectattr('name', 'match', ( ( kubeconfig | json_query('contexts') | selectattr('name', 'match', (kubeconfig | json_query('\"current-context\"'))) | list | first ).context.cluster )) | list | first ).cluster.server }}"
+        default_domain: "{{ lookup('k8s', api_version='config.openshift.io/v1', kind='Ingress', resource_name='cluster').spec.domain }}"
+
+    # The repo alreay contains a template. Because I want the repo to contain the example, extract template and use it.
+    - name: Configure config.ini
+      template:
+        src: app/config.ini.example.j2
+        dest: app/config.ini
