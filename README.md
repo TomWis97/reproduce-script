@@ -3,6 +3,11 @@ This is a script to reproduce the problems we're experiencing with OVN-kubernete
 
 We are aware that this does not represent normal use of a cluster.
 
+## Requirements
+- Be logged in as a user with `cluster-admin` permissions.
+- Have Ansible installed.
+- Have pip3 installed. (For installing the Python `requests` module.)
+
 ## Usage
 1. `cd` to the same directory as this file.
 2. Run the playbook:
