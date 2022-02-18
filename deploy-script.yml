@@ -67,7 +67,8 @@
 
     - name: Read kubeconfig
       set_fact:
-        kubeconfig: "{{ lookup('file', '~/.kube/config') | from_yaml }}"
+        # TODO Read env
+        kubeconfig: "{{ lookup('file', ( lookup('env', 'KUBECONFIG') | default('~/.kube/config', True) )) | from_yaml }}"
 
     - name: Set variables
       set_fact:
