@@ -6,19 +6,25 @@ We are aware that this does not represent normal use of a cluster.
 ## Requirements
 - Be logged in as a user with `cluster-admin` permissions.
 - Have Ansible installed.
-- Have pip3 installed. (For installing the Python `requests` module.)
+- Have pip3 installed. (For installing the Python modules.)
+- Have a writable registry configured within the cluster.
+- (For the error to occure: ovn-kubernetes SDN.)
 
 ## Usage
 1. `cd` to the same directory as this file.
-2. Install Ansible requirements:
+2. Install Python requirements:
+```bash
+pip3 install --user -r requirements.txt
+```
+3. Install Ansible requirements:
 ```bash
 ansible-galaxy collection install -r requirements.yml
 ```
-2. Run the playbook:
+4. Run the playbook:
 ```bash
 ansible-playbook deploy-script.yml
 ```
-3. Run the script:
+5. Run the script:
 ```bash
 ./run.sh
 ```
