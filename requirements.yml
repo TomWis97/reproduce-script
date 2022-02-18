@@ -1,0 +1,11 @@
+---
+roles: []
+collections:
+- name: kubernetes.core
+  source: https://galaxy.ansible.com
+- name: community.crypto
+  source: https://galaxy.ansible.com
+- name: amazon.aws
+  source: https://galaxy.ansible.com
+- name: cloud.common
+  source: https://galaxy.ansible.com

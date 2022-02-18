@@ -10,6 +10,10 @@ We are aware that this does not represent normal use of a cluster.
 
 ## Usage
 1. `cd` to the same directory as this file.
+2. Install Ansible requirements:
+```bash
+ansible-galaxy collection install -r requirements.yml
+```
 2. Run the playbook:
 ```bash
 ansible-playbook deploy-script.yml
