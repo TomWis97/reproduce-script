@@ -5,8 +5,9 @@ cd app
 rounds=0
 while true
 do
-    let "rounds++"
+    rounds=$((rounds+1))
     echo "===================== Starting run $rounds"
     ./main.py
+    sleep 20
 done
 
