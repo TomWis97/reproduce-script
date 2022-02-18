@@ -14,7 +14,7 @@
     - name: Create serviceaccount in openshift namespace
       kubernetes.core.k8s:
         kubeconfig: "{{ openshift_kubeconfig | default(omit) }}"
-        validate_certs: "{{ validate_certs | default(true) }}"
+        validate_certs: "{{ validate_certs | default(false) }}"
         namespace: openshift
         wait: yes
         name: health-check-script
@@ -25,7 +25,7 @@
     - name: Grant SA self-provisioner permissions
       kubernetes.core.k8s:
         kubeconfig: "{{ openshift_kubeconfig | default(omit) }}"
-        validate_certs: "{{ validate_certs | default(true) }}"
+        validate_certs: "{{ validate_certs | default(false) }}"
         apply: yes
         definition:
           apiVersion: rbac.authorization.k8s.io/v1
@@ -44,7 +44,7 @@
     - name: Grab name of SA secrets
       kubernetes.core.k8s_info:
         kubeconfig: "{{ openshift_kubeconfig | default(omit) }}"
-        validate_certs: "{{ validate_certs | default(true) }}"
+        validate_certs: "{{ validate_certs | default(false) }}"
         name: health-check-script
         namespace: openshift
         api_version: v1
@@ -58,7 +58,7 @@
     - name: Get token
       kubernetes.core.k8s_info:
         kubeconfig: "{{ openshift_kubeconfig | default(omit) }}"
-        validate_certs: "{{ validate_certs | default(true) }}"
+        validate_certs: "{{ validate_certs | default(false) }}"
         name: "{{ sa_data | json_query('resources[0].secrets[].name') | select('match', '.*token.*') | list | first }}"
         namespace: openshift
         api_version: v1
