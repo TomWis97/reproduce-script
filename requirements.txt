@@ -1,0 +1,9 @@
+kubernetes
+requests
+setuptools
+openshift
+netaddr
+pyyaml
+boto
+boto3
+botocore
